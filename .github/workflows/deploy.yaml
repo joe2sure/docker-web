@@ -1,0 +1,23 @@
+name: Deploy to Docker Swarm
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Deploy to Docker Swarm
+        run: |
+          docker pull ${{ secrets.DOCKER_USERNAME }}/my-web-app:latest
+          docker service update --image ${{ secrets.DOCKER_USERNAME }}/my-web-app:latest my_web_service || \
+          docker service create --name my_web_service --publish 80:80 ${{ secrets.DOCKER_USERNAME }}/my-web-app:latest
